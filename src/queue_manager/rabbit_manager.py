@@ -37,6 +37,9 @@ class RabbitDownloadRequest:
     def to_json(self):
         return json.dumps(self, default=lambda o: o.__dict__)
 
+    def __str__(self):
+        return "DownloadRequest: [downloadId: " + self.downloadId + ", songName: " + self.songName + "]\n"
+
 class RabbitDownloadCompleted:
     def __init__(self, downloadId, status, downloadName):
         self.downloadId = downloadId
@@ -45,6 +48,9 @@ class RabbitDownloadCompleted:
     
     def to_json(self):
         return json.dumps(self, default=lambda o:o.__dict__)
+    
+    def __str__(self):
+        return "DownloadCompleted: [downloadId: " + self.downloadId + " , downloadName: " + self.downloadName + "]\n"
 
 
 def init():
