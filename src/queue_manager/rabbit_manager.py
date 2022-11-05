@@ -87,5 +87,6 @@ def send_download_request_message(rabbit_channel ,message : RabbitDownloadReques
 def send_download_completed_message(rabbit_channel, message : RabbitDownloadCompleted):
     rabbit_channel.basic_publish(
         exchange=DOWNLOAD_COMPLETED_EXCHANGE,
-        body=message.to_json()
+        routing_key='',
+        body=message.to_json(),
     )
