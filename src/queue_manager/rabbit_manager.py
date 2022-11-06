@@ -38,7 +38,10 @@ class RabbitDownloadRequest:
         return json.dumps(self, default=lambda o: o.__dict__)
 
     def __str__(self):
-        return "DownloadRequest: [downloadId: " + self.downloadId + ", songName: " + self.songName + "]\n"
+        return f'DownloadRequest: [downloadId: {self.downloadId}, songName: {self.songName}, soundcloud: {self.soundcloud}]\n'
+
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
 
 class RabbitDownloadCompleted:
     def __init__(self, downloadId, status, downloadName):
@@ -51,6 +54,9 @@ class RabbitDownloadCompleted:
     
     def __str__(self):
         return "DownloadCompleted: [downloadId: " + self.downloadId + " , downloadName: " + self.downloadName + "]\n"
+
+    def __eq__(self, other):
+        return self.to_json() == other.to_json()
 
 
 def init():
