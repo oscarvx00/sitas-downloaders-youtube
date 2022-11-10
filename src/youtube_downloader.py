@@ -72,7 +72,7 @@ def download_request_callback(ch, method, properties, body):
 
     print("Downloading " + url)
     download_dir = DOWNLOAD_DIR + download_request.downloadId
-    download_command = f'yt-dlp -f \'ba\' -x --audio-format mp3 -P {download_dir} {url}'
+    download_command = f'yt-dlp -f \'ba\' -x --audio-format mp3 -P {download_dir} -k {url}'
     print(download_command)
     os.system(download_command)
     print("Downloaded " + url)
