@@ -1,3 +1,4 @@
 __pycache__
 msg.json
 .pytest_cache
+downloads_dir

@@ -2,6 +2,7 @@ import json
 import random
 import os
 import shutil
+import subprocess
 
 
 import queue_manager.rabbit_manager as RabbitManager
@@ -72,7 +73,7 @@ def download_request_callback(ch, method, properties, body):
 
     print("Downloading " + url)
     download_dir = DOWNLOAD_DIR + download_request.downloadId
-    download_command = f'yt-dlp -f \'ba\' -x --audio-format mp3 -P {download_dir} -k {url}'
+    download_command = f'yt-dlp -f \'ba\' -x --audio-format mp3 -P {download_dir} -k {url}'.replace("&", "\&")
     print(download_command)
     os.system(download_command)
     print("Downloaded " + url)
