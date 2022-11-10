@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sitas-downloaders-youtube
+  namespace: sitas
+spec:
+  selector:
+    matchLabels:
+      app: sitas-downloaders-youtube
+  template:
+    metadata:
+      labels:
+        app: sitas-downloaders-youtube
+    spec:
+      containers:
+        - name: sitas-downloaders-youtube
+          image: oscarvicente/sitas-downloaders-youtube-prod
+          resources:
+            limits:
+              memory: 1Gi
+              cpu: 1
+          env: 
+            - name: RABBITMQ_ENDPOINT
+              value: "goose-01.rmq2.cloudamqp.com"
+            - name: RABBITMQ_VHOST
+              value: oaoesvtq
+            - name: RABBITMQ_USER
+              value: oaoesvtq
+            - name: RABBITMQ_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: sitas-downloaders-youtube-secret
+                  key: RABBITMQ_PASS
+            - name: DOWNLOAD_REQUEST_EXCHANGE
+              value: sitas-prod-exchange-downloadrequest
+            - name: DOWNLOAD_REQUEST_YOUTUBE_QUEUE
+              value: sitas-prod-queue-downloadrequest-youtube
+            - name: DOWNLOAD_COMPLETED_EXCHANGE
+              value: sitas-prod-exchange-downloadcompleted
+            - name: MINIO_INTERNAL_ENDPOINT
+              value: oscarvx00.ddns.net
+            - name: MINIO_INTERNAL_PORT
+              value: "10000"
+            - name: MINIO_INTERNAL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: sitas-downloaders-youtube-secret
+                  key: MINIO_INTERNAL_USER
+            - name: MINIO_INTERNAL_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: sitas-downloaders-youtube-secret
+                  key: MINIO_INTERNAL_PASS
+            - name: MINIO_INTERNAL_BUCKET
+              value: internal-storage-prod
+            - name: YOUTUBE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: sitas-downloaders-youtube-secret
+                  key: YOUTUBE_API_KEY
