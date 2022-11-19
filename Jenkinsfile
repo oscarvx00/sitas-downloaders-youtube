@@ -36,7 +36,7 @@ pipeline {
                     sh 'cp -r -a containers/test/. ./'
                     sh """
                     docker build \
-                        --build-arg AZURE_SERVICE_BUS_CONNECTION_STRING=${AZURE_SERVICE_BUS_CONNECTION_STRING}\
+                        --build-arg AZURE_SERVICE_BUS_CONNECTION_STRING=${AZURE_SERVICE_BUS_CONNECTION_STRING} \
                         --build-arg AZURE_SERVICE_BUS_DOWNLOAD_REQUEST_YOUTUBE_QUEUE=${AZURE_SERVICE_BUS_DOWNLOAD_REQUEST_YOUTUBE_QUEUE} \
                         --build-arg AZURE_SERVICE_BUS_DOWNLOAD_REQUEST_QUEUE=${AZURE_SERVICE_BUS_DOWNLOAD_REQUEST_QUEUE} \
                         --build-arg AZURE_SERVICE_BUS_DOWNLOAD_COMPLETED_QUEUE=${AZURE_SERVICE_BUS_DOWNLOAD_COMPLETED_QUEUE} \
