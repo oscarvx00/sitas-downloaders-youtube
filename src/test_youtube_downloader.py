@@ -5,11 +5,12 @@ from mock import patch, call
 
 import youtube_downloader
 
-from queue_manager.rabbit_manager import RabbitDownloadRequest
+#from queue_manager.rabbit_manager import RabbitDownloadRequest
+from queue_manager.azure_service_bus_manager import RabbitDownloadRequest
 
 def test_resend_download_request_no_modules():
 
-    with patch.object( youtube_downloader.RabbitManager, 'send_download_completed_message') as send_download_completed_message_mock:
+    with patch.object( youtube_downloader.AzureServiceBusManager, 'send_download_completed_message') as send_download_completed_message_mock:
         
         #Prepare
         test_request = RabbitDownloadRequest(
@@ -40,7 +41,7 @@ def test_resend_download_request_no_modules():
 
 def test_resend_download_request_module_soundcloud():
 
-    with patch.object( youtube_downloader.RabbitManager, 'send_download_request_message') as send_download_request_message:
+    with patch.object( youtube_downloader.AzureServiceBusManager, 'send_download_request_message') as send_download_request_message:
         
         #Prepare
         test_request = RabbitDownloadRequest(
@@ -67,7 +68,6 @@ def test_resend_download_request_module_soundcloud():
             assert args[1].soundcloud == True
             assert args[1].youtube == False
             assert args[1].downloadId == test_request.downloadId
-            assert args[2] == 'soundcloud'
 
 
 

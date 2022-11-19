@@ -2,23 +2,26 @@ import json
 import random
 import os
 import shutil
-import subprocess
+import time
 
 
-import queue_manager.rabbit_manager as RabbitManager
+#import queue_manager.rabbit_manager as RabbitManager
 import youtube_manager.youtube_manager as YoutubeManager
 import internal_storage.minio_manager as MinioManager
+import queue_manager.azure_service_bus_manager as AzureServiceBusManager
 
 OTHER_DOWNLOAD_MODULES = ["soundcloud", "spotify"]
 DOWNLOAD_DIR = "downloads_dir/"
 
 
-global rabbit_channel
-rabbit_channel = None
+#global rabbit_channel
+#rabbit_channel = None
 global minio_client
 minio_client = None
+global sb_client
+sb_client = None
 
-def resend_download_request(download_request : RabbitManager.RabbitDownloadRequest):
+def resend_download_request(download_request : AzureServiceBusManager.RabbitDownloadRequest):
 
     available_modules = []
     for module in OTHER_DOWNLOAD_MODULES:
@@ -27,15 +30,14 @@ def resend_download_request(download_request : RabbitManager.RabbitDownloadReque
     
     if len(available_modules) == 0:
         print("Request " + download_request.downloadId + " discarded, no modules enabled")
-        RabbitManager.send_download_completed_message(rabbit_channel, RabbitManager.RabbitDownloadCompleted(
+        AzureServiceBusManager.send_download_completed_message(sb_client, AzureServiceBusManager.RabbitDownloadCompleted(
             download_request.downloadId,
             status='Error',
             downloadName=''
         ))
     else:
         download_request.youtube = False
-        selected_module = random.choice(available_modules)
-        RabbitManager.send_download_request_message(rabbit_channel, download_request, selected_module)
+        AzureServiceBusManager.send_download_request_message(sb_client, download_request)
 
 
 def get_song_name(download_id: str):
@@ -54,10 +56,11 @@ def rename_song_file(song_name : str, download_id: str):
 
 
 
-def download_request_callback(ch, method, properties, body):
+def download_request_callback(msg):
 
-    download_request_raw_json = json.loads(body)
-    download_request = RabbitManager.RabbitDownloadRequest.from_json(download_request_raw_json)
+    print(msg)
+    download_request_raw_json = json.loads(str(msg))
+    download_request = AzureServiceBusManager.RabbitDownloadRequest.from_json(download_request_raw_json)
 
     print("[+] Received: ", download_request)
 
@@ -78,7 +81,7 @@ def download_request_callback(ch, method, properties, body):
     os.system(download_command)
     print("Downloaded " + url)
 
-    #Search for dong in download folder
+    #Search for song in download folder
     song_name = get_song_name(download_request.downloadId)
     print(song_name)
     if song_name == None:
@@ -97,9 +100,9 @@ def download_request_callback(ch, method, properties, body):
         download_request.downloadId
     )
 
-    RabbitManager.send_download_completed_message(
-        rabbit_channel,
-        RabbitManager.RabbitDownloadCompleted(
+    AzureServiceBusManager.send_download_completed_message(
+        sb_client,
+        AzureServiceBusManager.RabbitDownloadCompleted(
             download_request.downloadId,
             'OK',
             song_name_winthout_extension
@@ -111,14 +114,24 @@ def download_request_callback(ch, method, properties, body):
 
 
 def run():
-    global rabbit_channel
-    rabbit_channel = RabbitManager.init()
+    #global rabbit_channel
+    #rabbit_channel = RabbitManager.init()
     global minio_client
     minio_client = MinioManager.init()
+    global sb_client
+    sb_client = AzureServiceBusManager.init()
 
     #Register callback, listen to msgs
-    rabbit_channel.basic_consume(RabbitManager.DOWNLOAD_REQUEST_YOUTUBE_QUEUE, auto_ack=True, on_message_callback=download_request_callback)
-    print('Listening to messages')
-    rabbit_channel.start_consuming()
+    #rabbit_channel.basic_consume(AzureServiceBusManager.DOWNLOAD_REQUEST_YOUTUBE_QUEUE, auto_ack=True, on_message_callback=download_request_callback)
+    #print('Listening to messages')
+    #rabbit_channel.start_consuming()
+    while True:
+        receiver = sb_client.get_queue_receiver(queue_name=AzureServiceBusManager.AZURE_SERVICE_BUS_DOWNLOAD_REQUEST_YOUTUBE_QUEUE)
+        with receiver:
+            for msg in receiver:
+                download_request_callback(msg)
+                receiver.complete_message(msg)
 
+        print('Listening loop')
+        time.sleep(10)
 
