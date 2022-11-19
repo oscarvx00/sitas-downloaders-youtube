@@ -2,3 +2,5 @@ yt-dlp
 minio
 pika
 requests
+azure-common
+azure-servicebus
