@@ -76,7 +76,7 @@ def download_request_callback(msg):
 
     print("Downloading " + url)
     download_dir = DOWNLOAD_DIR + download_request.downloadId
-    download_command = f'yt-dlp -f \'ba\' -x --audio-format mp3 -P {download_dir} -k {url}'.replace("&", "\&")
+    download_command = f'yt-dlp -f \'ba\' -x --max-downloads 1 --audio-format mp3 -P {download_dir} -k {url}'.replace("&", "\&")
     print(download_command)
     os.system(download_command)
     print("Downloaded " + url)
